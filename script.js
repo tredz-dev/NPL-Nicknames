@@ -91,7 +91,7 @@ function parseReplayLog(logText) {
         if (pokeMatch) {
             const pid = pokeMatch[1];
             let raw = pokeMatch[2].trim();
-            raw = raw.replace(/\|+$/, ''); // remove trailing |
+            raw = raw.replace(/\|+$/, '');
             const clean = getPokemonKey(raw);
             pokeMap[pid].push(clean);
             continue;
@@ -103,6 +103,20 @@ function parseReplayLog(logText) {
             const pid = switchMatch[1];
             const nickname = switchMatch[2].trim();
             let pokeRaw = switchMatch[3].trim();
+            pokeRaw = pokeRaw.replace(/\|+$/, '');
+            if (nickname) {
+                const clean = getPokemonKey(pokeRaw);
+                nickMap[pid][clean] = nickname;
+            }
+            continue;
+        }
+
+        // special zoroark treatment
+        const replaceMatch = line.match(/^\|replace\|(p[12])a:\s*([^|]*)\|(.+)$/);
+        if (replaceMatch) {
+            const pid = replaceMatch[1];
+            const nickname = replaceMatch[2].trim();
+            let pokeRaw = replaceMatch[3].trim();
             pokeRaw = pokeRaw.replace(/\|+$/, '');
             if (nickname) {
                 const clean = getPokemonKey(pokeRaw);
