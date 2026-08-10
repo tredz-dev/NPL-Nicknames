@@ -5,7 +5,7 @@ const CONFIG = {
 
 let allData = [];
 let currentWeekFilter = 'all';
-const MAX_WEEKS = 52;
+const MAX_WEEKS = 15;
 
 // DOM refs
 const $ = (sel) => document.querySelector(sel);
@@ -453,7 +453,7 @@ async function submitReplay(weekNum, url, forceOverwrite = false) {
         );
         const merged = [...filteredAll, ...newRows];
 
-        status.textContent = '📤 Uploading to Google Sheets…';
+        status.textContent = '📤 Uploading to Nicknames Sheet…';
         const sheetRows = objectsToRows(merged);
         await writeToSheet(sheetRows);
 
