@@ -33,8 +33,10 @@ function escapeHtml(str) {
 }
 
 function getPokemonKey(name) {
-    // Take everything before the first comma (base name)
-    return name.split(',')[0].trim();
+    let base = name.split(',')[0].trim();
+    // Remove wildcard form suffix like "-*"
+    base = base.replace(/-\*$/, '');
+    return base;
 }
 
 
@@ -89,8 +91,7 @@ function parseReplayLog(logText) {
         if (pokeMatch) {
             const pid = pokeMatch[1];
             let raw = pokeMatch[2].trim();
-            // remove trailing '|' if present 
-            raw = raw.replace(/\|+$/, '');
+            raw = raw.replace(/\|+$/, ''); // remove trailing |
             const clean = getPokemonKey(raw);
             pokeMap[pid].push(clean);
             continue;
@@ -214,7 +215,7 @@ function objectsToRows(objs) {
 }
 
 
-function renderTeamCard(item) {
+function renderTeamCard(item, index) {
     const pokes = item.pokemon.slice(0, 6);
     const nicks = item.nicknames.slice(0, 6);
     while (pokes.length < 6) pokes.push('');
@@ -233,15 +234,20 @@ function renderTeamCard(item) {
         `;
     }
 
-    const notesHtml = item.notes ? `<div class="notes">📝 ${escapeHtml(item.notes)}</div>` : '';
+    // Notes 
+    const noteId = `note-${item.team}-${item.week}-${item.opponent}`.replace(/\s/g, '_');
+    const noteValue = item.notes || '';
 
     return `
-        <div class="team-card">
+        <div class="team-card" data-team="${escapeHtml(item.team)}" data-week="${item.week}" data-opponent="${escapeHtml(item.opponent)}">
             <div class="card-header">
                 <span class="team-name">${escapeHtml(item.team)}</span>
             </div>
             <div class="pokemon-grid">${gridHtml}</div>
-            ${notesHtml}
+            <div class="notes-area">
+                <label for="${noteId}" class="notes-label">📝 Notes</label>
+                <textarea id="${noteId}" class="notes-textarea" rows="2">${escapeHtml(noteValue)}</textarea>
+            </div>
         </div>
     `;
 }
@@ -289,15 +295,34 @@ function renderSpreadsheet(data, weekFilterVal) {
             matchRows.sort((a, b) => a.team.localeCompare(b.team));
 
             html += `<div class="match-row">`;
-            html += renderTeamCard(matchRows[0]);
-            html += `<div class="vs-separator">vs</div>`;
-            html += renderTeamCard(matchRows[1]);
+            if (matchRows.length >= 2) {
+                const idx1 = allData.indexOf(matchRows[0]);
+                const idx2 = allData.indexOf(matchRows[1]);
+                html += renderTeamCard(matchRows[0], idx1);
+                html += `<div class="vs-separator">vs</div>`;
+                html += renderTeamCard(matchRows[1], idx2);
+            } else {
+                // Fallback: just render what we have
+                for (const row of matchRows) {
+                    html += renderTeamCard(row, allData.indexOf(row));
+                }
+            }
             html += `</div>`;
         }
         html += `</div>`;
     }
 
     mainContent.innerHTML = html;
+
+    document.querySelectorAll('.notes-textarea').forEach(textarea => {
+        textarea.addEventListener('blur', saveNote);
+        textarea.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                textarea.blur();
+            }
+        });
+    });
 }
 
 
@@ -450,6 +475,45 @@ async function submitReplay(weekNum, url, forceOverwrite = false) {
     }
 }
 
+async function saveNote(event) {
+    const textarea = event.target;
+    const card = textarea.closest('.team-card');
+    if (!card) return;
+
+    const team = card.dataset.team;
+    const week = parseInt(card.dataset.week, 10);
+    const opponent = card.dataset.opponent;
+    const newNote = textarea.value.trim();
+
+    const entry = allData.find(d =>
+        d.team === team && d.week === week && d.opponent === opponent
+    );
+    if (!entry) return;
+
+    if (entry.notes === newNote) return;
+
+    // update local data
+    entry.notes = newNote;
+
+    try {
+        const status = statusMsg;
+        status.className = 'status-msg info';
+        status.textContent = '💾 Saving note…';
+        status.style.display = 'block';
+
+        const sheetRows = objectsToRows(allData);
+        await writeToSheet(sheetRows);
+
+        status.className = 'status-msg success';
+        status.textContent = '✅ Note saved!';
+        setTimeout(() => { status.style.display = 'none'; }, 2000);
+    } catch (err) {
+        console.error(err);
+        status.className = 'status-msg error';
+        status.textContent = `❌ Failed to save note: ${err.message}`;
+    }
+}
+
 
 const tabs = document.querySelectorAll('[data-tab]');
 tabs.forEach(btn => {
@@ -496,7 +560,7 @@ submitBtn.addEventListener('click', async () => {
     }
     if (!url.includes('replay.pokemonshowdown.com')) {
         statusMsg.className = 'status-msg error';
-        statusMsg.textContent = '⚠️ Please enter a valid PokéShowdown replay URL.';
+        statusMsg.textContent = '⚠️ Please enter a valid showdown replay URL.';
         statusMsg.style.display = 'block';
         return;
     }
@@ -524,5 +588,5 @@ resetFormBtn.addEventListener('click', () => {
 populateWeekSelects();
 loadData();
 
-console.log('✅ PokéNickname Tracker loaded.');
+console.log('✅ Nicknames Tracker loaded.');
 console.log(`📝 Apps Script URL: ${CONFIG.APP_SCRIPT_URL || '(not set)'}`);

@@ -629,3 +629,41 @@ body {
         margin: 0.25rem 0;
     }
 }
+
+.notes-area {
+    margin-top: 0.75rem;
+    border-top: 1px solid #e9edf4;
+    padding-top: 0.6rem;
+}
+
+.notes-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #4a5a6e;
+    display: block;
+    margin-bottom: 0.2rem;
+}
+
+.notes-textarea {
+    width: 100%;
+    font-family: inherit;
+    font-size: 0.85rem;
+    border: 1px solid #dce2ec;
+    border-radius: 8px;
+    padding: 0.4rem 0.6rem;
+    background: #fafcff;
+    color: #1a2634;
+    resize: vertical;
+    transition: border-color 0.2s;
+}
+
+.notes-textarea:focus {
+    outline: none;
+    border-color: #1a2a6c;
+    box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.08);
+}
+
+.notes-textarea:disabled {
+    background: #f0f3f9;
+    color: #6a7e96;
+}
