@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PokéNickname Tracker</title>
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <!-- External Styles -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <div class="app-wrapper" id="app">
+
+        <!-- ─── HEADER ────────────────────────────────────────────── -->
+        <header class="app-header">
+            <h1> NPL Nicknames</h1>
+            <div class="nav-tabs" role="tablist">
+                <button class="active" data-tab="main">📊 Matches</button>
+                <button data-tab="submit">📥 Submit Replay</button>
+            </div>
+        </header>
+
+        <!-- ─── CONFIG BANNER ──────────────────────────────────────── -->
+        <div class="config-banner" id="configBanner">
+            <span class="label">📄 Google Sheets</span>
+            <span class="status" id="sheetStatus">⏳ checking connection…</span>
+            <button class="btn btn-secondary" id="refreshBtn" style="padding:0.3rem 1rem;font-size:0.8rem;">↻ Refresh</button>
+        </div>
+
+        <!-- ─── PANEL: MAIN ────────────────────────────────────────── -->
+        <section class="panel active" id="panelMain" role="tabpanel">
+
+            <div class="spreadsheet-controls">
+                <div class="left">
+                    <label for="weekFilter">Filter by Week</label>
+                    <select id="weekFilter">
+                        <option value="all">All Weeks</option>
+                    </select>
+                    <button class="btn btn-secondary" id="clearFilterBtn" style="padding:0.3rem 1rem;font-size:0.8rem;">✕ Clear</button>
+                </div>
+                <div>
+                    <span id="recordCount" style="font-size:0.9rem;color:#4a5a6e;">0 entries</span>
+                </div>
+            </div>
+
+            <div id="mainContent">
+                <div class="empty-state">
+                    <span class="emoji">📭</span>
+                    <p>No data loaded yet. Check your Google Sheets configuration or submit a replay.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── PANEL: SUBMIT ──────────────────────────────────────── -->
+        <section class="panel" id="panelSubmit" role="tabpanel">
+
+            <div class="submission-form" id="submissionForm">
+                <h2 style="font-size:1.4rem;font-weight:600;margin-bottom:1.2rem;color:#1a2634;">
+                    📥 Submit Battle Replay
+                </h2>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="weekSelect">Week <span class="required">*</span></label>
+                        <select id="weekSelect">
+                            <option value="">— Select Week —</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex:2;">
+                        <label for="replayUrl">Replay URL <span class="required">*</span></label>
+                        <input type="url" id="replayUrl" placeholder="https://replay.pokemonshowdown.com/…" />
+                        <div class="hint">Paste the full replay URL from Pok&eacute;mon Showdown.</div>
+                    </div>
+                </div>
+
+                <div class="warning-box" id="warningBox">
+                    <p>⚠️ <strong>Warning:</strong> Data already exists for Week <span id="warningWeek"></span>.
+                    Submitting will <strong>overwrite</strong> the existing nicknames for both teams.</p>
+                    <button class="btn btn-danger" id="confirmOverwriteBtn">Yes, overwrite anyway</button>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-primary" id="submitBtn">Upload</button>
+                    <button class="btn btn-secondary" id="resetFormBtn">Reset</button>
+                </div>
+
+                <div class="status-msg" id="statusMsg"></div>
+
+                <hr style="margin:2rem 0 1rem;border:none;border-top:1px solid #e9edf4;" />
+
+            </div>
+
+        </section>
+
+    </div>
+
+    <!-- External JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
