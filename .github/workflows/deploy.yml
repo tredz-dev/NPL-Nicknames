@@ -1,0 +1,28 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # or 'master' if that's your default branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # Required for pushing to gh-pages branch
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Inject Apps Script URL
+        run: |
+          # Replace the placeholder with the actual URL from secrets
+          sed -i "s|__APP_SCRIPT_URL__|${{ secrets.APP_SCRIPT_URL }}|g" script.js
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./          # Deploy all files from the root
+          publish_branch: gh-pages # The branch where Pages serves from
+          keep_files: false        # Clean the branch before deploying
