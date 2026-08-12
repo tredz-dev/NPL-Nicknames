@@ -40,13 +40,20 @@ function getPokemonKey(name) {
 }
 
 
-async function fetchSheetData() {
-    const url = CONFIG.APP_SCRIPT_URL;
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const json = await resp.json();
-    if (!json.success) throw new Error(json.error || 'Read error');
-    return json.data;
+async function fetchSheetData(retries = 2) {
+    for (let i = 0; i <= retries; i++) {
+        try {
+            const resp = await fetch(CONFIG.APP_SCRIPT_URL);
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const json = await resp.json();
+            if (!json.success) throw new Error(json.error);
+            return json.data;
+        } catch (err) {
+            if (i === retries) throw err;
+            console.warn(`Retry ${i+1} after error:`, err);
+            await new Promise(r => setTimeout(r, 1000 * (i+1))); 
+        }
+    }
 }
 
 
